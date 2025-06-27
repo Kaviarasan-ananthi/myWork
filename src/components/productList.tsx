@@ -14,31 +14,29 @@ import {
   Product,
 } from '../store/slices/productsSlice';
 import { addToCart } from '../store/slices/cartSlice';
-
 import { SearchBar, Button, Icon, Badge } from '@rneui/themed';
 import { Header, Image, Text } from '@rneui/base';
-import { appColors } from '../theme/appColors';
-import { useNavigation } from '@react-navigation/native';
 import Snackbar from 'react-native-snackbar';
+import { useNavigation } from '@react-navigation/native';
+import { appColors } from '../theme/appColors';
+import { appFonts } from '../theme/appFonts';
 
 const ProductList = () => {
   const dispatch = useDispatch<AppDispatch>();
   const navigation = useNavigation<any>();
 
-  // Access product and cart data from Redux store
-  const { products, loading, hasMore, wishlist } = useSelector((state: RootState) => state.products);
+  const { products, loading, hasMore, wishlist } = useSelector(
+    (state: RootState) => state.products
+  );
   const cartItems = useSelector((state: RootState) => state.cart.items);
 
-  // State for pull-to-refresh and search
   const [refreshing, setRefreshing] = useState(false);
   const [search, setSearch] = useState('');
 
-  // Fetch initial product list when component mounts
   useEffect(() => {
     dispatch(fetchProducts(1));
   }, [dispatch]);
 
-  // Add item to cart and show snackbar
   const handleAddToCart = (product: Product) => {
     const alreadyInCart = cartItems.some((item) => item.id === product.id);
     if (!alreadyInCart) {
@@ -50,38 +48,36 @@ const ProductList = () => {
     }
   };
 
-  // Toggle wishlist item
   const handleToggleWishlist = (productId: number) => {
     dispatch(toggleWishlist(productId));
   };
 
-  // Pull to refresh logic
   const handleRefresh = async () => {
     setRefreshing(true);
     await dispatch(fetchProducts(1));
     setRefreshing(false);
   };
 
-  // Pagination - load more products
   const handleLoadMore = () => {
     if (!loading && hasMore) {
       dispatch(fetchProducts(products.length / 10 + 1));
     }
   };
 
-  // Renders individual product cards
+  const filteredProducts = products.filter((product) =>
+    product.title.toLowerCase().includes(search.toLowerCase())
+  );
+
   const renderProduct = ({ item }: { item: Product }) => {
     const isWishlisted = wishlist.includes(item.id);
     const isInCart = cartItems.some((cartItem) => cartItem.id === item.id);
 
     return (
       <View style={styles.productCard}>
-        {/* Weight Tag */}
         <View style={styles.weightTag}>
           <Text style={styles.weightText}>500gm</Text>
         </View>
 
-        {/* Product Image */}
         <View style={styles.imageWrapper}>
           <Image
             source={{ uri: item.image }}
@@ -89,24 +85,21 @@ const ProductList = () => {
           />
         </View>
 
-        {/* Title */}
         <Text style={styles.title} numberOfLines={2}>
           {item.title}
         </Text>
 
-        {/* Price Row */}
         <View style={styles.priceRow}>
           <Text style={styles.oldPrice}>₹{(item.price * 1.2).toFixed(0)}</Text>
           <Text style={styles.newPrice}>₹{item.price.toFixed(0)}</Text>
         </View>
 
-        {/* Action Buttons */}
         <View style={styles.actionRow}>
           <Button
-            title={isInCart ? 'Already Added' : '+ ADD'}
+            title={isInCart ? 'Added' : '+ ADD'}
             disabled={isInCart}
             buttonStyle={styles.addButton}
-            titleStyle={{ fontSize: 12 }}
+            titleStyle={{ fontSize: 12, fontFamily: appFonts.bold }}
             onPress={() => handleAddToCart(item)}
           />
           <Icon
@@ -118,13 +111,11 @@ const ProductList = () => {
           />
         </View>
 
-        {/* Delivery Info */}
         <Text style={styles.deliveryText}>Standard Delivery (Tomorrow)</Text>
       </View>
     );
   };
 
-  // Loading spinner at the bottom during pagination
   const renderFooter = () => {
     if (!loading) return null;
     return (
@@ -136,20 +127,13 @@ const ProductList = () => {
     );
   };
 
-  // Filter products based on search input
-  const filteredProducts = products.filter((product) =>
-    product.title.toLowerCase().includes(search.toLowerCase())
-  );
-
   return (
     <View style={styles.container}>
-      {/* Header with cart count badge and profile icon */}
       <Header
-        placement="left"
-        leftComponent={{ text: '', style: { color: 'white' } }}
+        backgroundColor={appColors.primary}
         centerComponent={{
           text: 'Product List',
-          style: { fontSize: 18, textAlign: 'center', color: 'black' },
+          style: { color: '#fff', fontSize: 18, fontFamily: appFonts.bold },
         }}
         rightComponent={
           <View style={{ flexDirection: 'row', gap: 16 }}>
@@ -157,7 +141,7 @@ const ProductList = () => {
               name="user"
               type="font-awesome"
               color="black"
-              size={22}
+              size={26}
               onPress={() => navigation.navigate('Profile')}
             />
             <View>
@@ -165,25 +149,21 @@ const ProductList = () => {
                 name="shopping-cart"
                 type="font-awesome"
                 color="black"
-                size={22}
+                size={26}
                 onPress={() => navigation.navigate('Cart')}
               />
-              {/* Show cart item count as badge */}
               {cartItems.length > 0 && (
                 <Badge
                   value={cartItems.length}
                   status="error"
-                  containerStyle={{ position: 'absolute', top: -4, right: -6 }}
+                  containerStyle={{ position: 'absolute', top: -8, right: -8 }}
                 />
               )}
             </View>
           </View>
         }
-        backgroundColor={appColors.primary}
-        containerStyle={{ backgroundColor: 'white' }}
       />
 
-      {/* Search bar for filtering products */}
       <SearchBar
         placeholder="Search products..."
         onChangeText={setSearch}
@@ -191,42 +171,49 @@ const ProductList = () => {
         containerStyle={styles.searchContainer}
         inputContainerStyle={styles.searchInput}
         inputStyle={styles.searchText}
-        lightTheme
-        round
       />
 
-      {/* Product List */}
-      <FlatList
-        data={filteredProducts}
-        renderItem={renderProduct}
-        keyExtractor={(item, index) => `${item.id}-${index}`}
-        numColumns={2}
-        columnWrapperStyle={{ justifyContent: 'space-between' }}
-        onEndReached={handleLoadMore}
-        onEndReachedThreshold={0.1}
-        ListFooterComponent={renderFooter}
-        refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />
-        }
-        showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ paddingBottom: 20 }}
-      />
+      {search.trim() && filteredProducts.length === 0 && !loading ? (
+        <View style={styles.noResultContainer}>
+          <Text style={styles.noResultText}>No products found</Text>
+        </View>
+      ) : (
+        <FlatList
+          data={filteredProducts}
+          renderItem={renderProduct}
+          keyExtractor={(item, index) => `${item.id}-${index}`}
+          numColumns={2}
+          columnWrapperStyle={{ justifyContent: 'space-between' }}
+          onEndReached={handleLoadMore}
+          onEndReachedThreshold={0.1}
+          ListFooterComponent={renderFooter}
+          refreshControl={
+            <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />
+          }
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={{ paddingBottom: 20 }}
+        />
+      )}
     </View>
   );
 };
 
-// Styles for product list UI components
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: appColors.light },
   searchContainer: {
-    backgroundColor: appColors.light,
-    borderBottomWidth: 0,
-    borderTopWidth: 0,
-    paddingHorizontal: 10,
-    paddingTop: 10,
+    backgroundColor: 'transparent',
+    borderTopColor: 'transparent',
+    borderBottomColor: 'transparent',
   },
-  searchInput: { backgroundColor: '#f0f0f0' },
-  searchText: { color: appColors.text },
+  searchInput: {
+    backgroundColor: appColors.lightBackgroundColor,
+    borderRadius: 7,
+    height: 45,
+  },
+  searchText: {
+    color: appColors.dark,
+    fontFamily: appFonts.medium,
+  },
   productCard: {
     width: '47%',
     backgroundColor: '#fff',
@@ -261,6 +248,7 @@ const styles = StyleSheet.create({
   weightText: {
     fontSize: 10,
     color: appColors.text,
+    fontFamily: appFonts.bold,
   },
   title: {
     fontSize: 13,
@@ -269,6 +257,7 @@ const styles = StyleSheet.create({
     marginVertical: 4,
     minHeight: 32,
     textAlign: 'center',
+    fontFamily: appFonts.bold,
   },
   priceRow: {
     flexDirection: 'row',
@@ -280,11 +269,13 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: '#999',
     textDecorationLine: 'line-through',
+    fontFamily: appFonts.medium,
   },
   newPrice: {
     fontSize: 14,
     fontWeight: 'bold',
     color: appColors.primary,
+    fontFamily: appFonts.bold,
   },
   actionRow: {
     flexDirection: 'row',
@@ -303,8 +294,23 @@ const styles = StyleSheet.create({
     color: '#888',
     marginTop: 6,
     textAlign: 'center',
+    fontFamily: appFonts.medium,
   },
-  loader: { marginVertical: 20 },
+  loader: {
+    marginVertical: 20,
+  },
+  noResultContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+  },
+  noResultText: {
+    fontSize: 16,
+    color: appColors.accent,
+    fontFamily: appFonts.medium,
+    textAlign: 'center',
+  },
 });
 
 export default ProductList;

@@ -18,18 +18,16 @@ import {
 import { Card, Button, Image, Header, Icon } from '@rneui/base';
 import LinearGradient from 'react-native-linear-gradient';
 import { appColors } from '../theme/appColors';
+import { appFonts } from '../theme/appFonts';
 import { useNavigation } from '@react-navigation/native';
 
 const Profile = () => {
   const navigation = useNavigation();
-
-  // State variables for form and avatar
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [avatar, setAvatar] = useState('');
   const [uploading, setUploading] = useState(false);
 
-  // Form validation and simulated save action
   const handleSaveProfile = () => {
     if (!name.trim() || !email.trim()) {
       Alert.alert('Error', 'Please fill in all fields');
@@ -45,7 +43,6 @@ const Profile = () => {
     Alert.alert('Success', 'Profile updated successfully!');
   };
 
-  // Request camera permission on Android
   const requestCameraPermission = async () => {
     if (Platform.OS === 'android') {
       const granted = await PermissionsAndroid.request(
@@ -61,7 +58,6 @@ const Profile = () => {
     return true;
   };
 
-  // Show option for camera or gallery
   const handleImagePicker = () => {
     Alert.alert('Select Image', 'Choose an option', [
       { text: 'Camera', onPress: openCamera },
@@ -70,7 +66,6 @@ const Profile = () => {
     ]);
   };
 
-  // Open camera for image capture
   const openCamera = async () => {
     const hasPermission = await requestCameraPermission();
     if (hasPermission) {
@@ -78,22 +73,18 @@ const Profile = () => {
     }
   };
 
-  // Open gallery for image selection
   const openGallery = () => {
     launchImageLibrary({ mediaType: 'photo', quality: 0.8 }, handleImageResponse);
   };
 
-  // Handle selected or captured image
   const handleImageResponse = (response: ImagePickerResponse) => {
     if (response.didCancel || response.errorCode) return;
-
     const uri = response.assets?.[0]?.uri;
     if (uri) {
       simulateUpload(uri);
     }
   };
 
-  // Simulate image upload (replace with real API in production)
   const simulateUpload = (uri: string) => {
     setUploading(true);
     setTimeout(() => {
@@ -105,7 +96,6 @@ const Profile = () => {
 
   return (
     <View style={styles.container}>
-      {/* Top navigation header */}
       <Header
         backgroundColor={appColors.primary}
         leftComponent={
@@ -118,13 +108,11 @@ const Profile = () => {
         }
         centerComponent={{
           text: 'Profile',
-          style: { color: '#fff', fontSize: 18, fontWeight: 'bold' },
+          style: { color: '#fff', fontSize: 18, fontFamily: appFonts.bold },
         }}
       />
 
-      {/* Profile card UI */}
       <Card containerStyle={{ borderRadius: 10, elevation: 3 }}>
-        {/* Avatar area with gradient */}
         <LinearGradient
           colors={[appColors.gradientStart, appColors.gradientEnd]}
           style={styles.gradient}
@@ -142,7 +130,6 @@ const Profile = () => {
 
         <Card.Divider />
 
-        {/* Name Input */}
         <TextInput
           style={styles.input}
           value={name}
@@ -151,7 +138,6 @@ const Profile = () => {
           placeholderTextColor={appColors.placeholder}
         />
 
-        {/* Email Input */}
         <TextInput
           style={styles.input}
           value={email}
@@ -162,18 +148,17 @@ const Profile = () => {
           autoCapitalize="none"
         />
 
-        {/* Save Profile Button */}
         <Button
           title="Save Profile"
           buttonStyle={{ backgroundColor: appColors.primary, marginVertical: 10 }}
+          titleStyle={{ fontFamily: appFonts.bold }}
           onPress={handleSaveProfile}
         />
 
-        {/* Logout Button */}
         <Button
           title="Logout"
           type="clear"
-          titleStyle={{ color: appColors.accent }}
+          titleStyle={{ color: appColors.accent, fontFamily: appFonts.medium }}
           onPress={() => Alert.alert('Logged out')}
         />
       </Card>
@@ -181,7 +166,6 @@ const Profile = () => {
   );
 };
 
-// Styles
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -208,7 +192,7 @@ const styles = StyleSheet.create({
   avatarText: {
     color: '#fff',
     fontSize: 16,
-    fontWeight: 'bold',
+    fontFamily: appFonts.bold,
     textAlign: 'center',
     marginTop: 35,
   },
@@ -221,6 +205,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: appColors.border,
     color: appColors.text,
+    fontFamily: appFonts.medium,
   },
 });
 

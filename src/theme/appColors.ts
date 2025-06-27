@@ -9,4 +9,6 @@ export const appColors = {
   border: '#e0e0e0',
   gradientStart: '#007AFF',
   gradientEnd: '#0056b3',
+  dark: '#000000',
+  lightBackgroundColor: '#f5f5f5',
 };
