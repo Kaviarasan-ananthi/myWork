@@ -18,8 +18,11 @@ import { useNavigation } from '@react-navigation/native';
 const Cart = () => {
   const dispatch = useDispatch<AppDispatch>();
   const navigation = useNavigation();
+
+  // Get cart items and total amount from Redux store
   const { items, totalAmount } = useSelector((state: RootState) => state.cart);
 
+  // Show confirmation before removing an item
   const handleRemoveItem = (id: number) => {
     Alert.alert(
       'Remove Item',
@@ -31,6 +34,7 @@ const Cart = () => {
     );
   };
 
+  // Update quantity (or remove item if quantity <= 0)
   const handleUpdateQuantity = (id: number, quantity: number) => {
     if (quantity <= 0) {
       handleRemoveItem(id);
@@ -39,6 +43,7 @@ const Cart = () => {
     }
   };
 
+  // Render each item in the cart
   const renderCartItem = ({ item }: { item: any }) => (
     <ListItem.Swipeable
       rightContent={
@@ -61,6 +66,8 @@ const Cart = () => {
           ₹{item.price.toFixed(2)} x {item.quantity}
         </ListItem.Subtitle>
       </ListItem.Content>
+
+      {/* Quantity Control */}
       <View style={styles.quantityContainer}>
         <Button
           title="-"
@@ -79,6 +86,7 @@ const Cart = () => {
     </ListItem.Swipeable>
   );
 
+  // Render when cart is empty
   const renderEmptyCart = () => (
     <View style={styles.emptyContainer}>
       <Text style={styles.emptyText}>Your cart is empty</Text>
@@ -88,6 +96,7 @@ const Cart = () => {
 
   return (
     <SafeAreaView style={styles.container}>
+      {/* Header with back button */}
       <Header
         leftComponent={
           <Icon
@@ -105,17 +114,21 @@ const Cart = () => {
         containerStyle={{ borderBottomWidth: 1, borderBottomColor: '#ddd' }}
       />
 
+      {/* Show empty state or cart items */}
       {items.length === 0 ? (
         renderEmptyCart()
       ) : (
         <>
+          {/* Cart item list */}
           <FlatList
             data={items}
             renderItem={renderCartItem}
-            keyExtractor={(item) => item.id.toString()}
+            keyExtractor={(item, index) => `${item.id}-${index}`}
             showsVerticalScrollIndicator={false}
             contentContainerStyle={{ paddingBottom: 100 }}
           />
+
+          {/* Total section with checkout button */}
           <View style={styles.totalContainer}>
             <Text style={styles.totalText}>
               Total: ₹{totalAmount.toFixed(2)}

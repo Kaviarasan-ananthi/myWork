@@ -14,7 +14,8 @@ import {
   Product,
 } from '../store/slices/productsSlice';
 import { addToCart } from '../store/slices/cartSlice';
-import { SearchBar, Button, Icon } from '@rneui/themed';
+
+import { SearchBar, Button, Icon, Badge } from '@rneui/themed';
 import { Header, Image, Text } from '@rneui/base';
 import { appColors } from '../theme/appColors';
 import { useNavigation } from '@react-navigation/native';
@@ -24,15 +25,20 @@ const ProductList = () => {
   const dispatch = useDispatch<AppDispatch>();
   const navigation = useNavigation<any>();
 
+  // Access product and cart data from Redux store
   const { products, loading, hasMore, wishlist } = useSelector((state: RootState) => state.products);
   const cartItems = useSelector((state: RootState) => state.cart.items);
+
+  // State for pull-to-refresh and search
   const [refreshing, setRefreshing] = useState(false);
   const [search, setSearch] = useState('');
 
+  // Fetch initial product list when component mounts
   useEffect(() => {
     dispatch(fetchProducts(1));
   }, [dispatch]);
 
+  // Add item to cart and show snackbar
   const handleAddToCart = (product: Product) => {
     const alreadyInCart = cartItems.some((item) => item.id === product.id);
     if (!alreadyInCart) {
@@ -44,44 +50,57 @@ const ProductList = () => {
     }
   };
 
+  // Toggle wishlist item
   const handleToggleWishlist = (productId: number) => {
     dispatch(toggleWishlist(productId));
   };
 
+  // Pull to refresh logic
   const handleRefresh = async () => {
     setRefreshing(true);
     await dispatch(fetchProducts(1));
     setRefreshing(false);
   };
 
+  // Pagination - load more products
   const handleLoadMore = () => {
     if (!loading && hasMore) {
       dispatch(fetchProducts(products.length / 10 + 1));
     }
   };
 
+  // Renders individual product cards
   const renderProduct = ({ item }: { item: Product }) => {
     const isWishlisted = wishlist.includes(item.id);
     const isInCart = cartItems.some((cartItem) => cartItem.id === item.id);
 
     return (
       <View style={styles.productCard}>
+        {/* Weight Tag */}
         <View style={styles.weightTag}>
           <Text style={styles.weightText}>500gm</Text>
         </View>
+
+        {/* Product Image */}
         <View style={styles.imageWrapper}>
           <Image
             source={{ uri: item.image }}
             style={{ width: 50, height: 50, resizeMode: 'contain' }}
           />
         </View>
+
+        {/* Title */}
         <Text style={styles.title} numberOfLines={2}>
           {item.title}
         </Text>
+
+        {/* Price Row */}
         <View style={styles.priceRow}>
           <Text style={styles.oldPrice}>₹{(item.price * 1.2).toFixed(0)}</Text>
           <Text style={styles.newPrice}>₹{item.price.toFixed(0)}</Text>
         </View>
+
+        {/* Action Buttons */}
         <View style={styles.actionRow}>
           <Button
             title={isInCart ? 'Already Added' : '+ ADD'}
@@ -98,11 +117,14 @@ const ProductList = () => {
             onPress={() => handleToggleWishlist(item.id)}
           />
         </View>
+
+        {/* Delivery Info */}
         <Text style={styles.deliveryText}>Standard Delivery (Tomorrow)</Text>
       </View>
     );
   };
 
+  // Loading spinner at the bottom during pagination
   const renderFooter = () => {
     if (!loading) return null;
     return (
@@ -114,12 +136,14 @@ const ProductList = () => {
     );
   };
 
+  // Filter products based on search input
   const filteredProducts = products.filter((product) =>
     product.title.toLowerCase().includes(search.toLowerCase())
   );
 
   return (
     <View style={styles.container}>
+      {/* Header with cart count badge and profile icon */}
       <Header
         placement="left"
         leftComponent={{ text: '', style: { color: 'white' } }}
@@ -136,18 +160,30 @@ const ProductList = () => {
               size={22}
               onPress={() => navigation.navigate('Profile')}
             />
-            <Icon
-              name="shopping-cart"
-              type="font-awesome"
-              color="black"
-              size={22}
-              onPress={() => navigation.navigate('Cart')}
-            />
+            <View>
+              <Icon
+                name="shopping-cart"
+                type="font-awesome"
+                color="black"
+                size={22}
+                onPress={() => navigation.navigate('Cart')}
+              />
+              {/* Show cart item count as badge */}
+              {cartItems.length > 0 && (
+                <Badge
+                  value={cartItems.length}
+                  status="error"
+                  containerStyle={{ position: 'absolute', top: -4, right: -6 }}
+                />
+              )}
+            </View>
           </View>
         }
         backgroundColor={appColors.primary}
         containerStyle={{ backgroundColor: 'white' }}
       />
+
+      {/* Search bar for filtering products */}
       <SearchBar
         placeholder="Search products..."
         onChangeText={setSearch}
@@ -158,6 +194,8 @@ const ProductList = () => {
         lightTheme
         round
       />
+
+      {/* Product List */}
       <FlatList
         data={filteredProducts}
         renderItem={renderProduct}
@@ -177,6 +215,7 @@ const ProductList = () => {
   );
 };
 
+// Styles for product list UI components
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: appColors.light },
   searchContainer: {
