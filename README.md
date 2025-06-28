@@ -32,9 +32,6 @@ This separation helps with code reusability, easy testing, and collaboration acr
 
 3. Trade-offs / Shortcuts Due to Time
 Skipped unit testing for all components due to time constraints.
-
 Used inline styles in some components instead of extracting to StyleSheet.create().
-
 Used basic error handling in API responses; a more comprehensive solution like middleware can be added later.
-
 Used console.log for debugging instead of full logging infrastructure.
