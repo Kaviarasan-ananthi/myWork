@@ -15,6 +15,7 @@ React Native Vector Icons: For scalable, customizable icons across platforms.
 
 Image Picker: Simplifies camera and gallery integration.
 
+
 Snackbar & Safe Area Context: For user feedback and UI safety on notched devices.
 
 Linear Gradient: Used to enhance UI aesthetics with gradient backgrounds.
